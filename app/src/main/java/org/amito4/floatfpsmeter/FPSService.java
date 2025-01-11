@@ -160,7 +160,11 @@ public class FPSService extends Service {
                     float systemRate = getSystemRefreshRate();
                     updateBackgroundColor(systemRate);
                     Log.w(TAG,"systemRate="+systemRate);
-                    fpsTextView.setText(String.format("FPS:%.1f\nVote:%d\nSYS:%d", currentFps, voteFps,(int)systemRate));
+                    if (voteFps>0) {
+                        fpsTextView.setText(String.format("FPS:%.1f\nVote:%d\nSYS:%d", currentFps, voteFps, (int) systemRate));
+                    }else{
+                        fpsTextView.setText(String.format("FPS:%.1f\nSYS:%d", currentFps, (int) systemRate));
+                    }
                 }
             });
         }
