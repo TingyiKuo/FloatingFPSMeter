@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
     private Button exitButton;
     private boolean isMeterRunning = false;
     private RadioGroup fpsRadioGroup;
-    private int currentFps = 60; // Default FPS
+    private int voteFps = 0; // Vote FPS
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,31 +74,31 @@ public class MainActivity extends AppCompatActivity {
     private void setupFpsControls() {
         fpsRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.fpsNone) {
-                setSystemFps(0);  // 0 indicates no target FPS
+                setVoteFps(0);  // 0 indicates no target FPS
             } else if (checkedId == R.id.fps60) {
-                setSystemFps(60);
+                setVoteFps(60);
             } else if (checkedId == R.id.fps120) {
-                setSystemFps(120);
+                setVoteFps(120);
             } else if (checkedId == R.id.fps144) {
-                setSystemFps(144);
+                setVoteFps(144);
             }
         });
     }
 
-    private void setSystemFps(int fps) {
-        currentFps = fps;
+    private void setVoteFps(int fps) {
+        voteFps = fps;
         // If the service is running, update it
         if (isMeterRunning) {
             Intent intent = new Intent(this, FPSService.class);
             intent.setAction("UPDATE_FPS");
-            intent.putExtra("targetFps", fps);
+            intent.putExtra("voteFps", fps);
             startService(intent);
         }
     }
 
     private void startFPSService() {
         Intent intent = new Intent(this, FPSService.class);
-        intent.putExtra("targetFps", currentFps);
+        intent.putExtra("voteFps", voteFps);
         startService(intent);
         isMeterRunning = true;
         updateButtonStates();

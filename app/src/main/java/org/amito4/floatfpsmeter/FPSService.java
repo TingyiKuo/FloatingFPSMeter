@@ -22,6 +22,7 @@ import android.view.Window;
 import android.content.Context;
 import android.view.Display;
 import android.view.Surface;
+import android.graphics.Color;
 
 public class FPSService extends Service {
     private static final String TAG = "FloatFPSMeter";
@@ -42,7 +43,7 @@ public class FPSService extends Service {
     private float initialTouchY;
     private GestureDetector gestureDetector;
 
-    private int targetFps = 60;
+    private int voteFps = 0;
 
     @Override
     public void onCreate() {
@@ -67,15 +68,15 @@ public class FPSService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             if ("UPDATE_FPS".equals(intent.getAction())) {
-                targetFps = intent.getIntExtra("targetFps", 0);
+                voteFps = intent.getIntExtra("voteFps", 0);
                 updateFrameRate();
             } else {
-                targetFps = intent.getIntExtra("targetFps", 0);
+                voteFps = intent.getIntExtra("voteFps", 0);
                 // ... existing initialization code ...
                 updateFrameRate();
             }
 
-            Log.d(TAG, "onStartCommand++ targetFps = " + targetFps);
+            Log.d(TAG, "onStartCommand++ voteFps = " + voteFps);
         }
         return START_STICKY;
     }
@@ -156,7 +157,10 @@ public class FPSService extends Service {
             
             handler.post(() -> {
                 if (fpsTextView != null) {
-                    fpsTextView.setText(String.format("%.1f/%d/%d FPS", currentFps, targetFps, (int)getSystemRefreshRate()));
+                    float systemRate = getSystemRefreshRate();
+                    updateBackgroundColor(systemRate);
+                    Log.w(TAG,"systemRate="+systemRate);
+                    fpsTextView.setText(String.format("FPS:%.1f\nVote:%d\nSYS:%d", currentFps, voteFps,(int)systemRate));
                 }
             });
         }
@@ -215,14 +219,14 @@ public class FPSService extends Service {
     }
 
     private void updateFrameRate() {
-        if (targetFps > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        if (voteFps > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             if (floatingView != null && floatingView.getWindowToken() != null) {
                 try {
                     WindowManager.LayoutParams params = (WindowManager.LayoutParams) 
                         floatingView.getLayoutParams();
-                    params.preferredDisplayModeId = targetFps;
+                    params.preferredDisplayModeId = voteFps;
                     windowManager.updateViewLayout(floatingView, params);
-                    Log.d(TAG, "Set frame rate to " + targetFps);
+                    Log.d(TAG, "Set frame rate to " + voteFps);
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to set frame rate: " + e.getMessage());
                 }
@@ -230,4 +234,23 @@ public class FPSService extends Service {
         }
     }
 
+    private void updateBackgroundColor(float systemRate) {
+        int backgroundColor;
+        int textColor;
+        
+        if (systemRate <= (60+1)) { // 1 for floating margine
+            backgroundColor = Color.argb(128, 255, 0, 0);  // Semi-transparent red
+            textColor = Color.WHITE;  // White text for better contrast on red
+        } else if (systemRate <= (120+1)) {
+            backgroundColor = Color.argb(128, 0, 255, 0);  // Semi-transparent green
+            textColor = Color.BLACK;  // Black text for better contrast on green
+        } else {
+            backgroundColor = Color.argb(128, 0, 0, 255);  // Semi-transparent blue
+            textColor = Color.WHITE;  // White text for better contrast on blue
+        }
+        
+        fpsTextView.setBackgroundColor(backgroundColor);
+        fpsTextView.setTextColor(textColor);
+    }
+    
 } 
