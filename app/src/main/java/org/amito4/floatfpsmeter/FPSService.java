@@ -68,8 +68,10 @@ public class FPSService extends Service {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
                 Log.d(TAG, "onDoubleTap++");
-                showCloseDialog();
-                //stopSelf();
+                Intent intent = new Intent(FPSService.this, MainActivity.class);
+                intent.putExtra("isMeterRunning", true);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
                 return true;
             }
         });
