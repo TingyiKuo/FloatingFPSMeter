@@ -1,6 +1,6 @@
 ﻿# FloatingFPSMeter
 
-An small app for user to treat all png files in a folder as a boot.
+Floating widget showing current and actual FPS of system.
 
 <a href="./Screenshot_PopFPSMeter.jpg">
   <img src="./Screenshot_PopFPSMeter.jpg" alt="Screenshot of FloatingFPSMeter" width="400"/>
